@@ -1,3 +1,3 @@
-#Game miner on React
+# Game miner on React
 
 Pet project
