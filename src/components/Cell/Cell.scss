@@ -1,0 +1,19 @@
+.cell-wrapper {
+  min-width: 80px;
+  min-height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &.mine {
+    background-color: crimson;
+  }
+
+  &.number {
+    background-color: bisque;
+  }
+
+  &.empty {
+    background-color: aliceblue;
+  }
+}
