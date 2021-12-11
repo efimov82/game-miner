@@ -1,12 +1,13 @@
-import './Field.scss';
-import { Cell } from "../Cell/Cell";
+import './FieldComponent.scss';
+import {CellComponent} from "../CellComponent/CellComponent";
+import {Cell} from "../../common/cell";
 
-export function Field({ field }) {
+export function FieldComponent({field}: { field: Cell[][] }) {
     const mineMap = field.map((row) => {
         const rowComponent = row.map((cell) => {
             return (
                 <div className="field-cell">
-                    <Cell value={cell} />
+                    <CellComponent value={cell}/>
                 </div>
             );
         });
@@ -19,8 +20,10 @@ export function Field({ field }) {
     });
 
     return (
-        <div className="field">
-            {mineMap}
+        <div className="field-component">
+            <div className="field">
+                {mineMap}
+            </div>
         </div>
     );
 }

@@ -1,4 +1,4 @@
-export function Menu(props) {
+export function MenuComonent(props: any) {
     function newGameClick() {
         props.newGameClick();
     }
