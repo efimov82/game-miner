@@ -2,7 +2,7 @@ import './CellComponent.scss';
 import {Cell, CellTypeEnum} from "../../common/cell";
 import useForceUpdate from 'use-force-update';
 
-export function CellComponent(props: { value: Cell}) {
+export function CellComponent(props: { onCellClick: any,  cell: Cell}) {
     const forceUpdate = useForceUpdate();
 
 
@@ -31,13 +31,17 @@ export function CellComponent(props: { value: Cell}) {
     }
 
     function cellLeftClick() {
-        props.value.open();
+        props.onCellClick(props.cell.id);
         forceUpdate();
     }
 
     return (
         <div
             onClick={cellLeftClick}
-            className={`cell-wrapper ${getCellClass(props.value)}`}>{ getCellValue(props.value)}</div>
+            key={props.cell.id}
+            className={`cell-wrapper ${getCellClass(props.cell)}`}>
+            {/*<span style={{fontSize: "9px", padding: "10px"}}>{ props.cell.debugInfo }</span>*/}
+            { getCellValue(props.cell)}
+        </div>
     );
 }
