@@ -287,7 +287,7 @@ class App extends React.Component<AppProps, AppState> {
     return (
       <>
         {popUp}
-        <div className="row">
+        <div className="row m-2">
           <div className="col-8">{gameField}</div>
           <div className="col-4">
             <MenuComonent newGameClick={this.newGameClick} />
