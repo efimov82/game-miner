@@ -1,36 +1,63 @@
+import React, { ReactNode } from "react";
+
 import "./App.scss";
+import { Cell, CellTypeEnum } from "./common/cell";
 import { FieldComponent } from "./components/FieldComponent/FieldComponent";
+import GameOverComponent from "./components/GameOverComponent/GameOverComponent";
 import { MenuComonent } from "./components/MenuComonent/MenuComonent";
 import { StatsComponent } from "./components/StatsComponent/StatsComponent";
-import { useState } from "react";
-import { Cell, CellTypeEnum } from "./common/cell";
+import UserWinComponent from "./components/UserWinComponent/UserWinComponent";
 
-function App() {
-  const ROW_LENGTH = 10;
-  const CELL_LENGTH = 10;
-  const MINES_COUNT = 20;
+type AppProps = {};
 
-  const [state, setState] = useState({
-    field: [] as Cell[][],
-  });
+type AppState = {
+  field: Cell[][] | null;
+  gameStatus: GameStatus;
+};
 
-  function newGameClick() {
+enum GameStatus {
+  empty = "empty",
+  open = "open",
+  userWin = "win",
+  userLose = "lose",
+}
+
+class App extends React.Component<AppProps, AppState> {
+  ROW_LENGTH = 10;
+  CELL_LENGTH = 10;
+  MINES_COUNT = 20;
+
+  constructor(props: AppProps, state: AppState) {
+    super(props);
+    this.state = {
+      field: null,
+      gameStatus: GameStatus.empty,
+    };
+
+    this.newGameClick = this.newGameClick.bind(this);
+    this.openEmptyFields = this.openEmptyFields.bind(this);
+    this.getIndexesById = this.getIndexesById.bind(this);
+    this.onCellClick = this.onCellClick.bind(this);
+    this.onCellMarked = this.onCellMarked.bind(this);
+  }
+
+  public newGameClick() {
     console.log("new game starting");
-    const rows = Array.from(Array(ROW_LENGTH).keys(), (x) => []).map(
+    const rows = Array.from(Array(this.ROW_LENGTH).keys(), (x) => []).map(
       (row, rowIndex) => {
         const cells = Array.from(
-          Array(CELL_LENGTH).keys(),
+          Array(this.CELL_LENGTH).keys(),
           (x, cellIndex) =>
             new Cell(`${rowIndex}_${cellIndex}`, CellTypeEnum.empty)
         );
         return [...cells];
       }
     );
-    console.log("generation mines", MINES_COUNT);
-    let needMines = MINES_COUNT;
+    console.log("generation mines", this.MINES_COUNT);
+    let needMines = this.MINES_COUNT;
     while (needMines > 0) {
-      const xPos = Math.floor(Math.random() * CELL_LENGTH);
-      const yPos = Math.floor(Math.random() * ROW_LENGTH);
+      const xPos = Math.floor(Math.random() * this.CELL_LENGTH);
+      const yPos = Math.floor(Math.random() * this.ROW_LENGTH);
 
       if (rows[yPos][xPos].type === CellTypeEnum.empty) {
         rows[yPos][xPos].setType(CellTypeEnum.mine);
@@ -71,22 +98,25 @@ function App() {
 
     console.log("field", rows);
 
-    setState({
+    this.setState({
       field: rows,
+      gameStatus: GameStatus.open,
     });
   }
 
-  function openEmptyFields(
+  protected openEmptyFields(
     fields: Cell[][],
     { rowIndex, cellIndex }: { rowIndex: number; cellIndex: number }
   ) {
     const startRowIndex = rowIndex - 1 > 0 ? rowIndex - 1 : 0;
     const endRowIndex =
-      rowIndex + 1 < ROW_LENGTH - 1 ? rowIndex + 1 : ROW_LENGTH - 1;
+      rowIndex + 1 < this.ROW_LENGTH - 1 ? rowIndex + 1 : this.ROW_LENGTH - 1;
 
     const startCellIndex = cellIndex - 1 > 0 ? cellIndex - 1 : 0;
     const endCellIndex =
-      cellIndex + 1 < CELL_LENGTH - 1 ? cellIndex + 1 : CELL_LENGTH - 1;
+      cellIndex + 1 < this.CELL_LENGTH - 1
+        ? cellIndex + 1
+        : this.CELL_LENGTH - 1;
 
     for (let rIndex = startRowIndex; rIndex <= endRowIndex; rIndex += 1) {
       for (let cIndex = startCellIndex; cIndex <= endCellIndex; cIndex += 1) {
@@ -97,48 +127,83 @@ function App() {
           fields[rIndex][cIndex].minesAround === 0
         ) {
           fields[rIndex][cIndex].open();
-          openEmptyFields(fields, { rowIndex: rIndex, cellIndex: cIndex });
+          this.openEmptyFields(fields, { rowIndex: rIndex, cellIndex: cIndex });
         }
       }
     }
   }
 
-  function onCellClick(cellId: string) {
-    const indexes = getIndexesById(cellId);
-    const {rowIndex, cellIndex} = indexes;
-    const newFields = state.field;
-
-    if (!newFields[rowIndex][cellIndex].isOpen) {
-      switch (newFields[rowIndex][cellIndex].type) {
-        case CellTypeEnum.empty:
-          if (
-            newFields[rowIndex][cellIndex].minesAround === 0
-          ) {
-            openEmptyFields(newFields, indexes);
-          }
-
-          break;
-      }
-
-      newFields[rowIndex][cellIndex].open();
-      setState({ field: newFields });
+  public onCellClick(cellId: string) {
+    if (this.state.gameStatus !== GameStatus.open) {
+      return;
     }
+
+    const indexes = this.getIndexesById(cellId);
+    const { rowIndex, cellIndex } = indexes;
+    const newFields = this.state.field;
+
+    if (
+      newFields === null ||
+      newFields[rowIndex][cellIndex].isOpen ||
+      newFields[rowIndex][cellIndex].isMarked
+    ) {
+      return;
+    }
+
+    switch (newFields[rowIndex][cellIndex].type) {
+      case CellTypeEnum.empty:
+        if (newFields[rowIndex][cellIndex].minesAround === 0) {
+          this.openEmptyFields(newFields, indexes);
+        }
+        break;
+      case CellTypeEnum.mine:
+        this.gameOver();
+    }
+
+    newFields[rowIndex][cellIndex].open();
+    this.setState({ field: newFields });
   }
 
-  function onCellMarked(cellId: string) {
-    const indexes = getIndexesById(cellId);
-    const {rowIndex, cellIndex} = indexes;
-    const newFields = state.field;
+  protected gameOver() {
+    this.setState({
+      gameStatus: GameStatus.userLose,
+    });
+  }
+
+  public onCellMarked(cellId: string) {
+    if (this.state.gameStatus !== GameStatus.open) {
+      return;
+    }
+
+    const indexes = this.getIndexesById(cellId);
+    const { rowIndex, cellIndex } = indexes;
+    const newFields = this.state.field;
+
+    if (newFields === null) {
+      return;
+    }
+
     const cell = newFields[rowIndex][cellIndex];
 
     if (!cell.isOpen) {
-        newFields[rowIndex][cellIndex].setMarked(!cell.isMarked);
-
-        setState({ field: newFields });
+      newFields[rowIndex][cellIndex].setMarked(!cell.isMarked);
+      this.setState({ field: newFields });
+      if (this.checkAllMinesMarked()) {
+        this.setState({
+          gameStatus: GameStatus.userWin,
+        });
+      }
     }
   }
 
-  function getIndexesById(id: string): { rowIndex: number; cellIndex: number } {
+  protected checkAllMinesMarked(): boolean {
+    return false;
+  }
+
+  protected getIndexesById(id: string): {
+    rowIndex: number;
+    cellIndex: number;
+  } {
     const split = id.split("_");
     if (split.length !== 2) {
       const err = new Error(`Cant get index of ${id}`);
@@ -151,21 +216,44 @@ function App() {
     };
   }
 
-  return (
-    <div className="row">
-      <div className="col-8">
+  public render() {
+    let gameField: ReactNode = null;
+    let popUp: ReactNode = null;
+
+    if (this.state.field) {
+      gameField = (
         <FieldComponent
-          field={state.field}
-          onCellClick={onCellClick}
-          onCellMarked={onCellMarked}
+          field={this.state.field}
+          onCellClick={this.onCellClick}
+          onCellMarked={this.onCellMarked}
         />
-      </div>
-      <div className="col-4">
-        <MenuComonent newGameClick={newGameClick} />
-        <StatsComponent />
-      </div>
-    </div>
-  );
+      );
+    }
+
+    switch (this.state.gameStatus) {
+      case GameStatus.userLose:
+        popUp = <GameOverComponent />;
+        break;
+      case GameStatus.userWin:
+        popUp = <UserWinComponent />;
+        break;
+      default:
+      //
+    }
+
+    return (
+      <>
+        {popUp}
+        <div className="row">
+          <div className="col-8">{gameField}</div>
+          <div className="col-4">
+            <MenuComonent newGameClick={this.newGameClick} />
+            <StatsComponent />
+          </div>
+        </div>
+      </>
+    );
+  }
 }
 
 export default App;
