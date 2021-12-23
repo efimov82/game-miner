@@ -13,6 +13,7 @@ type AppProps = {};
 type AppState = {
   field: Cell[][] | null;
   gameStatus: GameStatus;
+  gameTimeSeconds: number;
 };
 
 enum GameStatus {
@@ -25,13 +26,19 @@ enum GameStatus {
 class App extends React.Component<AppProps, AppState> {
   ROW_LENGTH = 10;
   CELL_LENGTH = 10;
-  MINES_COUNT = 20;
+  MINES_COUNT = 5;
+
+  mines: Set<string> = new Set();
+  markedMines: Set<string> = new Set();
+  timer: any;
+  gameTimeSeconds = 0;
 
   constructor(props: AppProps, state: AppState) {
     super(props);
     this.state = {
       field: null,
       gameStatus: GameStatus.empty,
+      gameTimeSeconds: 0,
     };
 
     this.newGameClick = this.newGameClick.bind(this);
@@ -42,71 +49,157 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   public newGameClick() {
-    console.log("new game starting");
-    const rows = Array.from(Array(this.ROW_LENGTH).keys(), (x) => []).map(
-      (row, rowIndex) => {
-        const cells = Array.from(
-          Array(this.CELL_LENGTH).keys(),
-          (x, cellIndex) =>
-            new Cell(`${rowIndex}_${cellIndex}`, CellTypeEnum.empty)
-        );
-        return [...cells];
-      }
+    const field = this.generateEmptyGameField(
+      this.ROW_LENGTH,
+      this.CELL_LENGTH
     );
-    console.log("generation mines", this.MINES_COUNT);
-    let needMines = this.MINES_COUNT;
-    while (needMines > 0) {
+    this.generateMines(field, this.MINES_COUNT);
+    this.calculateNumbers(field);
+    this.markedMines = new Set();
+
+    this.setState({
+      field,
+      gameStatus: GameStatus.open,
+      gameTimeSeconds: 0,
+    });
+
+    clearInterval(this.timer);
+    this.setState({ gameTimeSeconds: 0 });
+    this.timer = setInterval(() => {
+      this.setState({ gameTimeSeconds: this.state.gameTimeSeconds + 1 });
+    }, 1000);
+  }
+
+  public onCellClick(cellId: string) {
+    if (this.state.gameStatus !== GameStatus.open) {
+      return;
+    }
+
+    const { rowIndex, cellIndex } = this.getIndexesById(cellId);
+    const newFields = this.state.field;
+
+    if (
+      newFields === null ||
+      newFields[rowIndex][cellIndex].isOpen ||
+      newFields[rowIndex][cellIndex].isMarked
+    ) {
+      return;
+    }
+
+    switch (newFields[rowIndex][cellIndex].type) {
+      case CellTypeEnum.empty:
+        if (newFields[rowIndex][cellIndex].minesAround === 0) {
+          this.openEmptyFields(newFields, rowIndex, cellIndex);
+        }
+        break;
+      case CellTypeEnum.mine:
+        this.gameOver();
+    }
+
+    newFields[rowIndex][cellIndex].open();
+    this.setState({ field: newFields });
+  }
+
+  public onCellMarked(cellId: string) {
+    if (this.state.gameStatus !== GameStatus.open) {
+      return;
+    }
+
+    const indexes = this.getIndexesById(cellId);
+    const { rowIndex, cellIndex } = indexes;
+    const newFields = this.state.field;
+
+    if (newFields === null) {
+      return;
+    }
+
+    const cell = newFields[rowIndex][cellIndex];
+
+    if (cell.isOpen) {
+      return;
+    }
+
+    const index = `${rowIndex}_${cellIndex}`;
+    if (!cell.isMarked) {
+      this.markedMines.add(index);
+    } else {
+      this.markedMines.delete(index);
+    }
+
+    newFields[rowIndex][cellIndex].setMarked(!cell.isMarked);
+    this.setState({ field: newFields });
+    if (this.checkAllMinesMarked()) {
+      this.setState({
+        gameStatus: GameStatus.userWin,
+      });
+      clearInterval(this.timer);
+    }
+  }
+
+  protected generateEmptyGameField(
+    rowsCount: number,
+    cellsCount: number
+  ): Cell[][] {
+    return Array.from(Array(rowsCount).keys(), (x) => []).map((_, rowIndex) => {
+      const cells = Array.from(
+        Array(cellsCount).keys(),
+        (x, cellIndex) =>
+          new Cell(`${rowIndex}_${cellIndex}`, CellTypeEnum.empty)
+      );
+      return [...cells];
+    });
+  }
+
+  protected generateMines(field: Cell[][], countMines: number): void {
+    this.mines = new Set();
+
+    while (countMines > 0) {
       const xPos = Math.floor(Math.random() * this.CELL_LENGTH);
       const yPos = Math.floor(Math.random() * this.ROW_LENGTH);
 
-      if (rows[yPos][xPos].type === CellTypeEnum.empty) {
-        rows[yPos][xPos].setType(CellTypeEnum.mine);
-        needMines -= 1;
+      if (field[yPos][xPos].type === CellTypeEnum.empty) {
+        field[yPos][xPos].setType(CellTypeEnum.mine);
+        const index = `${yPos}_${xPos}`;
+        this.mines.add(index);
+        countMines -= 1;
       }
     }
+  }
 
-    console.log("generating numbers");
-    for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
-      for (
-        let cellIndex = 0;
-        cellIndex < rows[rowIndex].length;
-        cellIndex += 1
-      ) {
-        if (rows[rowIndex][cellIndex].type !== CellTypeEnum.mine) {
-          const startRowIndex = rowIndex - 1 >= 0 ? rowIndex - 1 : 0;
-          const startCellIndex = cellIndex - 1 >= 0 ? cellIndex - 1 : 0;
-          const endRowIndex =
-            rowIndex + 1 < rows.length ? rowIndex + 1 : rows.length - 1;
-          const endCellIndex =
-            cellIndex + 1 < rows[rowIndex].length
-              ? cellIndex + 1
-              : rows[rowIndex].length - 1;
+  protected calculateNumbers(field: Cell[][]): void {
+    for (let rowIndex = 0; rowIndex < field.length; rowIndex++) {
+      for (let cellIndex = 0; cellIndex < field[rowIndex].length; cellIndex++) {
+        if (field[rowIndex][cellIndex].type === CellTypeEnum.mine) {
+          continue;
+        }
 
-          let minesAround = 0;
-          for (let y = startRowIndex; y <= endRowIndex; y += 1) {
-            for (let x = startCellIndex; x <= endCellIndex; x += 1) {
-              if (rows[y][x].type === CellTypeEnum.mine) {
-                minesAround += 1;
-              }
+        const startRowIndex = rowIndex - 1 >= 0 ? rowIndex - 1 : 0;
+        const startCellIndex = cellIndex - 1 >= 0 ? cellIndex - 1 : 0;
+        const endRowIndex =
+          rowIndex + 1 < field.length ? rowIndex + 1 : field.length - 1;
+        const endCellIndex =
+          cellIndex + 1 < field[rowIndex].length
+            ? cellIndex + 1
+            : field[rowIndex].length - 1;
+
+        let minesAround = 0;
+        for (let y = startRowIndex; y <= endRowIndex; y += 1) {
+          for (let x = startCellIndex; x <= endCellIndex; x += 1) {
+            if (field[y][x].type === CellTypeEnum.mine) {
+              minesAround += 1;
             }
           }
-
-          rows[rowIndex][cellIndex].minesAround = minesAround;
         }
+
+        field[rowIndex][cellIndex].minesAround = minesAround;
       }
     }
-
-    console.log("field", rows);
-
-    this.setState({
-      field: rows,
-      gameStatus: GameStatus.open,
-    });
   }
 
   protected openEmptyFields(
     fields: Cell[][],
-    { rowIndex, cellIndex }: { rowIndex: number; cellIndex: number }
+    rowIndex: number,
+    cellIndex: number
   ) {
     const startRowIndex = rowIndex - 1 > 0 ? rowIndex - 1 : 0;
     const endRowIndex =
@@ -127,77 +220,20 @@ class App extends React.Component<AppProps, AppState> {
           fields[rIndex][cIndex].minesAround === 0
         ) {
           fields[rIndex][cIndex].open();
-          this.openEmptyFields(fields, { rowIndex: rIndex, cellIndex: cIndex });
+          this.openEmptyFields(fields, rIndex, cIndex);
         }
-      }
-    }
-  }
-
-  public onCellClick(cellId: string) {
-    if (this.state.gameStatus !== GameStatus.open) {
-      return;
-    }
-
-    const indexes = this.getIndexesById(cellId);
-    const { rowIndex, cellIndex } = indexes;
-    const newFields = this.state.field;
-
-    if (
-      newFields === null ||
-      newFields[rowIndex][cellIndex].isOpen ||
-      newFields[rowIndex][cellIndex].isMarked
-    ) {
-      return;
-    }
-
-    switch (newFields[rowIndex][cellIndex].type) {
-      case CellTypeEnum.empty:
-        if (newFields[rowIndex][cellIndex].minesAround === 0) {
-          this.openEmptyFields(newFields, indexes);
-        }
-        break;
-      case CellTypeEnum.mine:
-        this.gameOver();
-    }
-
-    newFields[rowIndex][cellIndex].open();
-    this.setState({ field: newFields });
-  }
-
-  protected gameOver() {
-    this.setState({
-      gameStatus: GameStatus.userLose,
-    });
-  }
-
-  public onCellMarked(cellId: string) {
-    if (this.state.gameStatus !== GameStatus.open) {
-      return;
-    }
-
-    const indexes = this.getIndexesById(cellId);
-    const { rowIndex, cellIndex } = indexes;
-    const newFields = this.state.field;
-
-    if (newFields === null) {
-      return;
-    }
-
-    const cell = newFields[rowIndex][cellIndex];
-
-    if (!cell.isOpen) {
-      newFields[rowIndex][cellIndex].setMarked(!cell.isMarked);
-      this.setState({ field: newFields });
-      if (this.checkAllMinesMarked()) {
-        this.setState({
-          gameStatus: GameStatus.userWin,
-        });
       }
     }
   }
 
   protected checkAllMinesMarked(): boolean {
-    return false;
+    for (const cell of this.mines) {
+      if (!this.markedMines.has(cell)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   protected getIndexesById(id: string): {
@@ -214,6 +250,13 @@ class App extends React.Component<AppProps, AppState> {
       rowIndex: +split[0],
       cellIndex: +split[1],
     };
+  }
+
+  protected gameOver() {
+    this.setState({
+      gameStatus: GameStatus.userLose,
+    });
+    clearInterval(this.timer);
   }
 
   public render() {
@@ -248,7 +291,11 @@ class App extends React.Component<AppProps, AppState> {
           <div className="col-8">{gameField}</div>
           <div className="col-4">
             <MenuComonent newGameClick={this.newGameClick} />
-            <StatsComponent />
+            <StatsComponent
+              countMines={this.mines.size}
+              markedMines={this.markedMines.size}
+              gameTime={this.state.gameTimeSeconds}
+            />
           </div>
         </div>
       </>
