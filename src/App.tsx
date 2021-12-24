@@ -25,9 +25,9 @@ enum GameStatus {
 }
 
 class App extends React.Component<AppProps, AppState> {
-  ROW_LENGTH = 10;
-  CELL_LENGTH = 10;
-  MINES_COUNT = 5;
+  ROW_LENGTH = 20;
+  CELL_LENGTH = 20;
+  MINES_COUNT = 60;
 
   mines: Set<string> = new Set();
   markedMines: Set<string> = new Set();
@@ -202,6 +202,25 @@ class App extends React.Component<AppProps, AppState> {
     rowIndex: number,
     cellIndex: number
   ) {
+    fields[rowIndex][cellIndex].open();
+
+    const cellsAround = this.collectCellsAround(fields, rowIndex, cellIndex);
+    cellsAround.forEach((cell) => {
+      if (fields[cell.x][cell.y].minesAround === 0) {
+        this.openEmptyFields(fields, cell.x, cell.y);
+      }
+
+      fields[cell.x][cell.y].open();
+    });
+  }
+
+  protected collectCellsAround(
+    fields: Cell[][],
+    rowIndex: number,
+    cellIndex: number
+  ): Set<{ x: number; y: number }> {
+    let result = new Set<{ x: number; y: number }>();
+
     const startRowIndex = rowIndex - 1 > 0 ? rowIndex - 1 : 0;
     const endRowIndex =
       rowIndex + 1 < this.ROW_LENGTH - 1 ? rowIndex + 1 : this.ROW_LENGTH - 1;
@@ -212,19 +231,18 @@ class App extends React.Component<AppProps, AppState> {
         ? cellIndex + 1
         : this.CELL_LENGTH - 1;
 
-    for (let rIndex = startRowIndex; rIndex <= endRowIndex; rIndex += 1) {
-      for (let cIndex = startCellIndex; cIndex <= endCellIndex; cIndex += 1) {
+    for (let rIndex = startRowIndex; rIndex <= endRowIndex; rIndex++) {
+      for (let cIndex = startCellIndex; cIndex <= endCellIndex; cIndex++) {
         fields[rIndex][cIndex].debugInfo = "checked";
         if (
           !fields[rIndex][cIndex].isOpen &&
-          fields[rIndex][cIndex].type === CellTypeEnum.empty &&
-          fields[rIndex][cIndex].minesAround === 0
+          !fields[rIndex][cIndex].isMarked
         ) {
-          fields[rIndex][cIndex].open();
-          this.openEmptyFields(fields, rIndex, cIndex);
+          result.add({ x: rIndex, y: cIndex });
         }
       }
     }
+    return result;
   }
 
   protected checkAllMinesMarked(): boolean {
@@ -273,7 +291,7 @@ class App extends React.Component<AppProps, AppState> {
         />
       );
     } else {
-      gameField = (<RulesComponent />);
+      gameField = <RulesComponent />;
     }
 
     switch (this.state.gameStatus) {
