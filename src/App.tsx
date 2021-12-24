@@ -5,6 +5,7 @@ import { Cell, CellTypeEnum } from "./common/cell";
 import { FieldComponent } from "./components/FieldComponent/FieldComponent";
 import GameOverComponent from "./components/GameOverComponent/GameOverComponent";
 import { MenuComonent } from "./components/MenuComonent/MenuComonent";
+import { RulesComponent } from "./components/RulesComponent/RulesComponent";
 import { StatsComponent } from "./components/StatsComponent/StatsComponent";
 import UserWinComponent from "./components/UserWinComponent/UserWinComponent";
 
@@ -271,6 +272,8 @@ class App extends React.Component<AppProps, AppState> {
           onCellMarked={this.onCellMarked}
         />
       );
+    } else {
+      gameField = (<RulesComponent />);
     }
 
     switch (this.state.gameStatus) {
