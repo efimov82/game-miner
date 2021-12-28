@@ -7,7 +7,7 @@ import "./FieldComponent.scss";
 type FieldComponentProps = {
   onCellClick: (cellId: string) => void;
   onCellMarked: (cellId: string) => void;
-  field: Cell[][];
+  field: Cell[][] | null;
 };
 
 export class FieldComponent extends React.Component<FieldComponentProps, {}> {
@@ -26,6 +26,10 @@ export class FieldComponent extends React.Component<FieldComponentProps, {}> {
   };
 
   render() {
+    if (!this.props.field) {
+      return <></>
+    }
+    
     const fieldMap = this.props.field.map((row, rowIndex) => {
       const rowComponent = row.map((cell, cellIndex) => {
         return (

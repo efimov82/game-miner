@@ -1,4 +1,5 @@
 import "./StatsComponent.scss";
+// import mine from '../../assets/images/mine.svg';
 
 type StatsProps = {
   countMines: number;
@@ -8,10 +9,24 @@ type StatsProps = {
 
 export function StatsComponent(props: StatsProps) {
   return (
-    <div className="stats-wrapper">
-      <div> Mines: <strong>{props.countMines}</strong></div>
-      <div> Marked mines: <strong>{props.markedMines}</strong></div>
-      <div> Time: <strong>{formatTime(props.gameTime)}</strong></div>
+    <div className="row m-10">
+      <div className="col-2 d-flex">
+        <span className="mineImage" />
+        <span className="">
+          X <strong>{props.countMines}</strong>
+        </span>
+      </div>
+      <div className="col-2 d-flex">
+        <span className="markedMinesImage"></span>
+        <span className="">
+          X <strong>{props.markedMines}</strong>
+        </span>
+      </div>
+      <div className="col-4 d-flex">
+        <span className="">
+          Time: <strong>{formatTime(props.gameTime)}</strong>
+        </span>
+      </div>
     </div>
   );
 

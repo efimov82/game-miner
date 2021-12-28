@@ -1,11 +1,14 @@
-export function MenuComonent(props: any) {
-    function newGameClick() {
-        props.newGameClick();
-    }
+import { Link } from "react-router-dom";
 
-    return (
-        <div className="menu-wrapper">
-            <button className="btn btn-primary" onClick={newGameClick}>New game</button>
-        </div>
-    );
+export function MenuComonent(props: {}) {
+  return (
+    <div className="row menu-wrapper">
+      <div className="m-2">
+        <Link to="/">Rules</Link>
+      </div>
+      <div className="m-2">
+        <Link to="/top">TOP 20</Link>
+      </div>
+    </div>
+  );
 }

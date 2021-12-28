@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 
-export default function UserWinComponent() {
+type UserWinProps = {
+  onNewGameClick: () => void;
+};
+
+export default function UserWinComponent(props: UserWinProps) {
   const [show, setShow] = useState(true);
 
   const handleClose = () => setShow(false);
@@ -14,7 +18,7 @@ export default function UserWinComponent() {
         </Modal.Header>
         <Modal.Body>You're win!</Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={handleClose}>
+          <Button variant="primary" onClick={props.onNewGameClick}>
             Play again
           </Button>
         </Modal.Footer>

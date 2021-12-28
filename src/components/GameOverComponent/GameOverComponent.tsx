@@ -1,10 +1,20 @@
 import { useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 
-export default function GameOverComponent() {
+type GameOverComponentProps = {
+  onNewGameClick: () => void;
+  onShowAllMinesClick: () => void;
+};
+
+export default function GameOverComponent(props: GameOverComponentProps) {
   const [show, setShow] = useState(true);
 
   const handleClose = () => setShow(false);
+
+  const handleShowMines = () => {
+    setShow(false);
+    props.onShowAllMinesClick()
+  }
 
   return (
     <>
@@ -12,12 +22,12 @@ export default function GameOverComponent() {
         <Modal.Header closeButton>
           <Modal.Title>Game over</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Sorry, you're lose!</Modal.Body>
+        <Modal.Body>Sorry, you're lose... Let's play again?</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={handleShowMines}>
             Open all mines
           </Button>
-          <Button variant="primary" onClick={handleClose}>
+          <Button variant="primary" onClick={props.onNewGameClick}>
             Play again
           </Button>
         </Modal.Footer>
