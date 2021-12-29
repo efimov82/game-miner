@@ -11,10 +11,10 @@ class App extends React.Component {
     return (
       <>
         <div className="row m-2">
-          <div className="col-2">
+          <div className="col-1">
             <MenuComonent />
           </div>
-          <div className="col-10">
+          <div className="col-11">
             <Routes>
               <Route path="/" element={<RulesComponent />} />
               <Route path="game" element={<GameComponent />} />
