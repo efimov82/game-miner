@@ -7,10 +7,6 @@ import { RulesComponent } from "./components/RulesComponent/RulesComponent";
 import { TopComponent } from "./components/TopComponent/TopComponent";
 
 class App extends React.Component {
-  componentDidMount() {
-    document.title = "Minesweeper game";
-  }
-
   public render() {
     return (
       <>
