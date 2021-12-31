@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export function MenuComonent(props: {}) {
+export function MenuComponent(props: {}) {
   return (
     <div className="row menu-wrapper">
       <div className="m-2">

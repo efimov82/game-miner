@@ -1,3 +1,4 @@
+import { DifficultyLevel, GameSettings } from "../types/game.types";
 import { Cell, CellTypeEnum } from "./cell";
 
 export function generateEmptyGameField(
@@ -12,6 +13,29 @@ export function generateEmptyGameField(
     );
     return [...cells];
   });
+}
+
+export function getCountMinesForLevel(settings: GameSettings): number {
+  const cellsCount = settings.cells * settings.rows;
+  let coefficient: number;
+  switch (settings.difficultyLevel) {
+    case DifficultyLevel.low:
+      coefficient = 15;
+      break;
+    case DifficultyLevel.medium:
+      coefficient = 10;
+      break;
+    case DifficultyLevel.high:
+      coefficient = 5;
+      break;
+    case DifficultyLevel.hardcore:
+      coefficient = 4;
+      break;
+    default:
+      throw new Error('Wrong DifficultyLevel value');
+    }
+
+    return Math.round(cellsCount / coefficient);
 }
 
 export function generateMines(

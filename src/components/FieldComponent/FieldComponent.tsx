@@ -12,12 +12,10 @@ type FieldComponentProps = {
 
 export class FieldComponent extends React.Component<FieldComponentProps, {}> {
   componentDidMount() {
-    //document.addEventListener("click", this.handleClick);
     document.addEventListener("contextmenu", this.handleContextMenu);
   }
 
   componentWillUnmount() {
-    //document.removeEventListener("click", this.handleClick);
     document.removeEventListener("contextmenu", this.handleContextMenu);
   }
 
@@ -29,7 +27,7 @@ export class FieldComponent extends React.Component<FieldComponentProps, {}> {
     if (!this.props.field) {
       return <></>
     }
-    
+
     const fieldMap = this.props.field.map((row, rowIndex) => {
       const rowComponent = row.map((cell, cellIndex) => {
         return (

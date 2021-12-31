@@ -1,22 +1,30 @@
 import React, { ReactNode } from "react";
+import { useQuery } from "react-query";
 import { CellTypeEnum } from "../../common/cell";
 import {
   calculateNumbers,
   generateEmptyGameField,
   generateMines,
+  getCountMinesForLevel,
   getIndexesById,
-  openEmptyCells
+  openEmptyCells,
 } from "../../common/functions";
-import { GameState, GameStatus } from "../../types/game.types";
+import {
+  GameSettings,
+  GameState,
+  GameStatus,
+  WinnerResult,
+} from "../../types/game.types";
 import { FieldComponent } from "../FieldComponent/FieldComponent";
-import GameOverComponent from "../GameOverComponent/GameOverComponent";
+import GameOverComponent from "../popups/GameOverComponent/GameOverComponent";
 import { StatsComponent } from "../StatsComponent/StatsComponent";
-import UserWinComponent from "../UserWinComponent/UserWinComponent";
+import { UserWinComponent } from "../popups/UserWinComponent/UserWinComponent";
+import { NewGameComponent } from "../popups/NewGameComponent/NewGameComponent";
 
 export class GameComponent extends React.Component<{}, GameState> {
-  ROW_LENGTH = 20;
-  CELL_LENGTH = 20;
-  MINES_COUNT = 60;
+  ROW_LENGTH = 10;
+  CELL_LENGTH = 10;
+  MINES_COUNT = 5;
 
   mines: Set<string> = new Set();
   markedMines: Set<string> = new Set();
@@ -28,24 +36,53 @@ export class GameComponent extends React.Component<{}, GameState> {
     this.state = {
       field: null,
       gameStatus: GameStatus.empty,
+      showModalNewGame: true,
       gameTimeSeconds: 0,
     };
 
+    this.onNewGameClick = this.onNewGameClick.bind(this);
     this.onCellClick = this.onCellClick.bind(this);
     this.onCellMarked = this.onCellMarked.bind(this);
+
     this.startNewGame = this.startNewGame.bind(this);
     this.showAllMines = this.showAllMines.bind(this);
-  }
+    this.getGameResult = this.getGameResult.bind(this);
+    this.saveGameResult = this.saveGameResult.bind(this);
 
-  componentDidMount(): void {
-    this.startNewGame();
+    this.handleNewGameClick = this.handleNewGameClick.bind(this);
+    this.handleModalNewGameClose = this.handleModalNewGameClose.bind(this);
   }
 
   componentWillUnmount(): void {
     clearInterval(this.timer);
   }
 
-  public startNewGame(): void {
+  public handleNewGameClick() {
+    this.setState({
+      gameStatus: GameStatus.empty,
+      showModalNewGame: true,
+    });
+  }
+
+  protected onNewGameClick(): void {
+    if (this.state.gameStatus !== GameStatus.open) {
+      this.handleNewGameClick();
+    } else {
+      this.setState({
+        showModalNewGame: true,
+      });
+    }
+  }
+
+  public startNewGame(settings?: GameSettings): void {
+    console.log("call startNewGame", settings);
+
+    if (settings) {
+      this.CELL_LENGTH = settings.cells;
+      this.ROW_LENGTH = settings.rows;
+      this.MINES_COUNT = getCountMinesForLevel(settings);
+    }
+
     const field = generateEmptyGameField(this.ROW_LENGTH, this.CELL_LENGTH);
     this.mines = generateMines(field, this.MINES_COUNT);
     calculateNumbers(field);
@@ -55,6 +92,7 @@ export class GameComponent extends React.Component<{}, GameState> {
       field,
       gameStatus: GameStatus.open,
       gameTimeSeconds: 0,
+      showModalNewGame: false,
     });
 
     clearInterval(this.timer);
@@ -153,15 +191,63 @@ export class GameComponent extends React.Component<{}, GameState> {
     this.setState({ field: newField });
   }
 
+  protected handleModalNewGameClose() {
+    this.setState({ showModalNewGame: false });
+  }
+
   protected getPopupContent(): ReactNode {
     switch (this.state.gameStatus) {
+      case GameStatus.empty:
+      case GameStatus.open:
+        return (
+          this.state.showModalNewGame && (
+            <NewGameComponent
+              onNewGameClick={this.startNewGame}
+              onNewGameModalClose={this.handleModalNewGameClose}
+            ></NewGameComponent>
+          )
+        );
       case GameStatus.userLose:
-        return <GameOverComponent onNewGameClick={this.startNewGame} onShowAllMinesClick={this.showAllMines} />;
+        return (
+          <GameOverComponent
+            onNewGameClick={this.handleNewGameClick}
+            onShowAllMinesClick={this.showAllMines}
+          />
+        );
       case GameStatus.userWin:
-        return <UserWinComponent onNewGameClick={this.startNewGame} />;
+        return (
+          <UserWinComponent
+            gameResult={this.getGameResult()}
+            onSaveRusultClick={this.saveGameResult}
+            onNewGameClick={this.handleNewGameClick}
+          />
+        );
       default:
         return "";
     }
+  }
+
+  protected saveGameResult(nickName: string) {
+    const result = this.getGameResult();
+    result.nickName = nickName;
+
+    console.log(result);
+    // useQuery('');
+  }
+
+  protected getGameResult(): WinnerResult {
+    if (!this.state.field) {
+      throw Error("Error get game result");
+    }
+
+    const fieldSize = `${this.state.field?.length}x${this.state.field[0].length}`;
+    return {
+      fieldSize: fieldSize,
+      countMines: this.mines.size,
+      gameTime: this.state.gameTimeSeconds,
+      nickName: "",
+      timestamp: 0,
+    };
   }
 
   public render() {
@@ -186,8 +272,8 @@ export class GameComponent extends React.Component<{}, GameState> {
         </div>
         <div className="row">
           <div className="col">
-            <button className="btn btn-primary" onClick={this.startNewGame}>
-              Play again
+            <button className="btn btn-primary" onClick={this.onNewGameClick}>
+              New game
             </button>
           </div>
         </div>
