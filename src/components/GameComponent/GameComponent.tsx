@@ -145,6 +145,10 @@ export class GameComponent extends React.Component<{}, GameState> {
     }
 
     if (!cell.isMarked) {
+      if (this.markedMines.size === this.mines.size) {
+        return;
+      }
+      
       this.markedMines.add(cellId);
     } else {
       this.markedMines.delete(cellId);
