@@ -74,8 +74,6 @@ export class GameComponent extends React.Component<{}, GameState> {
   }
 
   public startNewGame(settings?: GameSettings): void {
-    console.log("call startNewGame", settings);
-
     if (settings) {
       this.CELL_LENGTH = settings.cells;
       this.ROW_LENGTH = settings.rows;

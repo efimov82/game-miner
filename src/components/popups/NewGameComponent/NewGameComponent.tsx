@@ -26,16 +26,9 @@ export class NewGameComponent extends React.Component<
         difficultyLevel: DifficultyLevel.low,
       },
     };
-
-    console.log("NewGameComponent", props);
   }
 
-  //handleClose = () => this.setState({ show: false });
   handleClose = () => this.props.onNewGameModalClose();
-
-  componentWillUnmount() {
-    console.log("unmount NewGameComponent");
-  }
 
   handleChangeLevel = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
