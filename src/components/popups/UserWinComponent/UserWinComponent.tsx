@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button, Modal } from "react-bootstrap";
 import { formatTime } from "../../../common/date-time.functions";
-import { GameSettings, WinnerResult } from "../../../types/game.types";
+import { WinnerResult } from "../../../types/game.types";
 
 type UserWinProps = {
   gameResult: WinnerResult;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button, Modal } from "react-bootstrap";
 import { DifficultyLevel, GameSettings } from "../../../types/game.types";
 
@@ -16,9 +16,6 @@ export class NewGameComponent extends React.Component<
   NewGameComponentProps,
   NewGameComponentState
 > {
-  // const [show, setShow] = useState(true);
-  // const [gameSettings, setGameSettings] = useState<GameSettings>({
-
   constructor(props: NewGameComponentProps, state: NewGameComponentState) {
     super(props);
     this.state = {
@@ -37,7 +34,7 @@ export class NewGameComponent extends React.Component<
   handleClose = () => this.props.onNewGameModalClose();
 
   componentWillUnmount() {
-    console.log('unmount NewGameComponent');
+    console.log("unmount NewGameComponent");
   }
 
   handleChangeLevel = (event: React.ChangeEvent<HTMLSelectElement>) => {

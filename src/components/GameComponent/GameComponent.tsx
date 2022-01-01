@@ -1,5 +1,4 @@
 import React, { ReactNode } from "react";
-import { useQuery } from "react-query";
 import { CellTypeEnum } from "../../common/cell";
 import {
   calculateNumbers,
@@ -7,19 +6,19 @@ import {
   generateMines,
   getCountMinesForLevel,
   getIndexesById,
-  openEmptyCells,
+  openEmptyCells
 } from "../../common/functions";
 import {
   GameSettings,
   GameState,
   GameStatus,
-  WinnerResult,
+  WinnerResult
 } from "../../types/game.types";
 import { FieldComponent } from "../FieldComponent/FieldComponent";
 import GameOverComponent from "../popups/GameOverComponent/GameOverComponent";
-import { StatsComponent } from "../StatsComponent/StatsComponent";
-import { UserWinComponent } from "../popups/UserWinComponent/UserWinComponent";
 import { NewGameComponent } from "../popups/NewGameComponent/NewGameComponent";
+import { UserWinComponent } from "../popups/UserWinComponent/UserWinComponent";
+import { StatsComponent } from "../StatsComponent/StatsComponent";
 
 export class GameComponent extends React.Component<{}, GameState> {
   ROW_LENGTH = 10;
@@ -148,7 +147,7 @@ export class GameComponent extends React.Component<{}, GameState> {
       if (this.markedMines.size === this.mines.size) {
         return;
       }
-      
+
       this.markedMines.add(cellId);
     } else {
       this.markedMines.delete(cellId);
