@@ -3,6 +3,7 @@ import { Button, Modal } from "react-bootstrap";
 import { DifficultyLevel, GameSettings } from "../../../types/game.types";
 
 type NewGameComponentProps = {
+  settings: GameSettings;
   onNewGameClick: (settings: GameSettings) => void;
   onNewGameModalClose: () => void;
 };
@@ -16,16 +17,15 @@ export class NewGameComponent extends React.Component<
   NewGameComponentProps,
   NewGameComponentState
 > {
+  protected sizes = ["10x10", "15x15", "20x20", "25x25", "30x30", "40x40"];
+
   constructor(props: NewGameComponentProps, state: NewGameComponentState) {
     super(props);
     this.state = {
       show: true,
-      gameSettings: {
-        rows: 10,
-        cells: 10,
-        difficultyLevel: DifficultyLevel.low,
-      },
+      gameSettings: props.settings,
     };
+    // this.genarateGameSizesSelect = this.genarateGameSizesSelect.bind(this);
   }
 
   handleClose = () => this.props.onNewGameModalClose();
@@ -66,6 +66,40 @@ export class NewGameComponent extends React.Component<
     this.setState({ gameSettings: settings });
   };
 
+  generateDifficultyLevelsSelect() {
+    return (
+      <select
+        name="fieldSize"
+        value={this.state.gameSettings.difficultyLevel}
+        onChange={(e) => this.handleChangeLevel(e)}
+      >
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+        <option value="hardcore">Hardcore</option>
+      </select>
+    );
+  }
+
+  genarateGameSizesSelect() {
+    const options = this.sizes.map((value, index) => {
+      return <option key={index}>{value}</option>;
+    });
+
+    const selected =
+      this.state.gameSettings.rows + "x" + this.state.gameSettings.rows;
+
+    return (
+      <select
+        name="fieldSize"
+        onChange={(e) => this.handleFieldSizeChange(e)}
+        value={selected}
+      >
+        {options}
+      </select>
+    );
+  }
+
   render() {
     return (
       <>
@@ -74,32 +108,8 @@ export class NewGameComponent extends React.Component<
             <Modal.Title>Create new game</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <p>
-              Field size:{" "}
-              <select
-                name="fieldSize"
-                onChange={(e) => this.handleFieldSizeChange(e)}
-              >
-                <option value="10x10">10x10</option>
-                <option value="15x15">15x15</option>
-                <option value="20x20">20x20</option>
-                <option value="25x25">25x25</option>
-                <option value="30x30">30x30</option>
-                <option value="40x40">40x40</option>
-              </select>
-            </p>
-            <p>
-              Difficulty:{" "}
-              <select
-                name="fieldSize"
-                onChange={(e) => this.handleChangeLevel(e)}
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="hardcore">Hardcore</option>
-              </select>
-            </p>
+            <p>Field size: {this.genarateGameSizesSelect()}</p>
+            <p>Difficulty: {this.generateDifficultyLevelsSelect()}</p>
           </Modal.Body>
           <Modal.Footer>
             <Button

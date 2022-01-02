@@ -6,13 +6,14 @@ import {
   generateMines,
   getCountMinesForLevel,
   getIndexesById,
-  openEmptyCells
+  openEmptyCells,
 } from "../../common/functions";
 import {
+  DifficultyLevel,
   GameSettings,
   GameState,
   GameStatus,
-  WinnerResult
+  WinnerResult,
 } from "../../types/game.types";
 import { FieldComponent } from "../FieldComponent/FieldComponent";
 import GameOverComponent from "../popups/GameOverComponent/GameOverComponent";
@@ -21,14 +22,15 @@ import { UserWinComponent } from "../popups/UserWinComponent/UserWinComponent";
 import { StatsComponent } from "../StatsComponent/StatsComponent";
 
 export class GameComponent extends React.Component<{}, GameState> {
-  ROW_LENGTH = 10;
-  CELL_LENGTH = 10;
-  MINES_COUNT = 5;
-
   mines: Set<string> = new Set();
   markedMines: Set<string> = new Set();
   timer: number = 0;
   gameTimeSeconds = 0;
+  settings: GameSettings = {
+    rows: 10,
+    cells: 10,
+    difficultyLevel: DifficultyLevel.low,
+  };
 
   constructor(props: {}, state: GameState) {
     super(props);
@@ -75,13 +77,12 @@ export class GameComponent extends React.Component<{}, GameState> {
 
   public startNewGame(settings?: GameSettings): void {
     if (settings) {
-      this.CELL_LENGTH = settings.cells;
-      this.ROW_LENGTH = settings.rows;
-      this.MINES_COUNT = getCountMinesForLevel(settings);
+      this.settings = settings;
     }
 
-    const field = generateEmptyGameField(this.ROW_LENGTH, this.CELL_LENGTH);
-    this.mines = generateMines(field, this.MINES_COUNT);
+    const field = generateEmptyGameField(this.settings.rows, this.settings.cells);
+    const countMines = getCountMinesForLevel(this.settings);
+    this.mines = generateMines(field, countMines);
     calculateNumbers(field);
     this.markedMines = new Set();
 
@@ -203,6 +204,7 @@ export class GameComponent extends React.Component<{}, GameState> {
         return (
           this.state.showModalNewGame && (
             <NewGameComponent
+              settings={this.settings}
               onNewGameClick={this.startNewGame}
               onNewGameModalClose={this.handleModalNewGameClose}
             ></NewGameComponent>
