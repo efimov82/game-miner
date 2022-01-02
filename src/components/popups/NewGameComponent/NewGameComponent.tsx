@@ -25,7 +25,6 @@ export class NewGameComponent extends React.Component<
       show: true,
       gameSettings: props.settings,
     };
-    // this.genarateGameSizesSelect = this.genarateGameSizesSelect.bind(this);
   }
 
   handleClose = () => this.props.onNewGameModalClose();
