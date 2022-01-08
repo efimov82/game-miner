@@ -14,7 +14,7 @@ export type GameSettings = {
 };
 
 export type GameState = {
-  field: Cell[][] | null;
+  field: { data: Cell[][] } | null;
   gameStatus: GameStatus;
   gameTimeSeconds: number;
   showModalNewGame: boolean;

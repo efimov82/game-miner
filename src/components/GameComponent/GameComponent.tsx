@@ -80,14 +80,17 @@ export class GameComponent extends React.Component<{}, GameState> {
       this.settings = settings;
     }
 
-    const field = generateEmptyGameField(this.settings.rows, this.settings.cells);
+    const fieldData = generateEmptyGameField(
+      this.settings.rows,
+      this.settings.cells
+    );
     const countMines = getCountMinesForLevel(this.settings);
-    this.mines = generateMines(field, countMines);
-    calculateNumbers(field);
+    this.mines = generateMines(fieldData, countMines);
+    calculateNumbers(fieldData);
     this.markedMines = new Set();
 
     this.setState({
-      field,
+      field: { data: fieldData },
       gameStatus: GameStatus.open,
       gameTimeSeconds: 0,
       showModalNewGame: false,
@@ -100,15 +103,17 @@ export class GameComponent extends React.Component<{}, GameState> {
   }
 
   public onCellClick(cellId: string): void {
-    if (this.state.gameStatus !== GameStatus.open) {
+    if (
+      this.state.gameStatus !== GameStatus.open ||
+      this.state.field?.data === undefined
+    ) {
       return;
     }
 
     const { rowIndex, cellIndex } = getIndexesById(cellId);
-    const newFields = this.state.field;
+    const newFields = this.state.field.data;
 
     if (
-      newFields === null ||
       newFields[rowIndex][cellIndex].isOpen ||
       newFields[rowIndex][cellIndex].isMarked
     ) {
@@ -126,7 +131,7 @@ export class GameComponent extends React.Component<{}, GameState> {
     }
 
     newFields[rowIndex][cellIndex].open();
-    this.setState({ field: newFields });
+    this.setState({ field: { data: newFields } });
   }
 
   public onCellMarked(cellId: string): void {
@@ -135,7 +140,7 @@ export class GameComponent extends React.Component<{}, GameState> {
     }
 
     const { rowIndex, cellIndex } = getIndexesById(cellId);
-    const newFields = this.state.field;
+    const newFields = this.state.field.data;
     const cell = newFields[rowIndex][cellIndex];
 
     if (cell.isOpen) {
@@ -153,7 +158,7 @@ export class GameComponent extends React.Component<{}, GameState> {
     }
 
     newFields[rowIndex][cellIndex].setMarked(!cell.isMarked);
-    this.setState({ field: newFields });
+    this.setState({ field: { data: newFields } });
     if (this.checkAllMinesMarked()) {
       this.setState({
         gameStatus: GameStatus.userWin,
@@ -180,7 +185,7 @@ export class GameComponent extends React.Component<{}, GameState> {
   }
 
   protected showAllMines(): void {
-    const newField = this.state.field;
+    const newField = this.state.field?.data;
     if (!newField) {
       return;
     }
@@ -190,7 +195,7 @@ export class GameComponent extends React.Component<{}, GameState> {
       newField[rowIndex][cellIndex].open();
     }
 
-    this.setState({ field: newField });
+    this.setState({ field: { data: newField } });
   }
 
   protected handleModalNewGameClose() {
@@ -243,7 +248,7 @@ export class GameComponent extends React.Component<{}, GameState> {
       throw Error("Error get game result");
     }
 
-    const fieldSize = `${this.state.field?.length}x${this.state.field[0].length}`;
+    const fieldSize = `${this.state.field?.data.length}x${this.state.field?.data[0].length}`;
     return {
       fieldSize: fieldSize,
       countMines: this.mines.size,

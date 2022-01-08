@@ -1,13 +1,13 @@
 import React from "react";
-
 import { Cell } from "../../common/cell";
 import { CellComponent } from "../CellComponent/CellComponent";
 import "./FieldComponent.scss";
 
+
 type FieldComponentProps = {
   onCellClick: (cellId: string) => void;
   onCellMarked: (cellId: string) => void;
-  field: Cell[][] | null;
+  field: { data: Cell[][] } | null;
 };
 
 export class FieldComponent extends React.Component<FieldComponentProps, {}> {
@@ -19,16 +19,23 @@ export class FieldComponent extends React.Component<FieldComponentProps, {}> {
     document.removeEventListener("contextmenu", this.handleContextMenu);
   }
 
+  shouldComponentUpdate(
+    nextProps: FieldComponentProps,
+    nextState: {}
+  ): boolean {
+    return this.props.field !== nextProps.field;
+  }
+
   handleContextMenu = (e: MouseEvent) => {
     e.preventDefault();
   };
 
   render() {
     if (!this.props.field) {
-      return <></>
+      return <></>;
     }
 
-    const fieldMap = this.props.field.map((row, rowIndex) => {
+    const fieldMap = this.props.field.data.map((row, rowIndex) => {
       const rowComponent = row.map((cell, cellIndex) => {
         return (
           <div className="field-cell" key={cellIndex.toString()}>
