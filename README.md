@@ -1,3 +1,3 @@
-# Game miner on React
+# Game Minesweeper on React
 
-Pet project
+Online demo: https://serene-lovelace-83723a.netlify.app/
