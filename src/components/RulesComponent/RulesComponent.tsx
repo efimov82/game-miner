@@ -21,16 +21,19 @@ export function RulesComponent() {
             Otherwise, the uncovered cell displays either a number, indicating
             the number of mines diagonally and/or adjacent to it, or a blank
             tile, and all adjacent non-mined cells will automatically be
-            uncovered. Right-clicking on a cell will flag it, causing a flag to
-            appear on it. Flagged cells are still considered covered, and a
-            player can click on them to uncover them, although typically they
-            must first be unflagged with an additional right-click. To win the
-            game, player must flagging all the mined cells.
+            uncovered. Right-clicking (long-pressing on Mobile) on a cell will
+            flag it, causing a flag to appear on it. Flagged cells are still
+            considered covered, and a player can click on them to uncover them,
+            although typically they must first be unflagged with an additional
+            right-click. To win the game, player must flagging all the mined
+            cells.
           </p>
         </div>
       </div>
       <div className="d-flex">
-        <Link className="btn btn-primary" to="/game">Start game</Link>
+        <Link className="btn btn-primary" to="/game">
+          Start game
+        </Link>
       </div>
     </>
   );
