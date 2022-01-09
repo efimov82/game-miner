@@ -21,7 +21,7 @@ import { NewGameComponent } from "../popups/NewGameComponent/NewGameComponent";
 import { UserWinComponent } from "../popups/UserWinComponent/UserWinComponent";
 import { StatsComponent } from "../StatsComponent/StatsComponent";
 
-export class GameComponent extends React.Component<{}, GameState> {
+class GameComponent extends React.Component<{}, GameState> {
   mines: Set<string> = new Set();
   markedMines: Set<string> = new Set();
   timer: number = 0;
@@ -289,3 +289,5 @@ export class GameComponent extends React.Component<{}, GameState> {
     );
   }
 }
+
+export default GameComponent;

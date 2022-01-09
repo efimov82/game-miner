@@ -5,7 +5,7 @@ import { formatTime } from "../../common/date-time.functions";
 import { fetchTop } from "../../services/game.service";
 import { WinnerResult } from "../../types/game.types";
 
-export const TopComponent: React.FC = () => {
+const TopComponent: React.FC = () => {
   const { status, error, data } = useQuery<WinnerResult[], Error>(
     ["top-query", { count: 20 }],
     fetchTop
@@ -61,3 +61,5 @@ export const TopComponent: React.FC = () => {
     return content;
   }
 };
+
+export default TopComponent;
