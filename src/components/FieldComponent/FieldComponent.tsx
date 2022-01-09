@@ -3,27 +3,22 @@ import { Cell } from "../../common/cell";
 import { CellComponent } from "../CellComponent/CellComponent";
 import "./FieldComponent.scss";
 
-
 type FieldComponentProps = {
   onCellClick: (cellId: string) => void;
   onCellMarked: (cellId: string) => void;
   field: { data: Cell[][] } | null;
 };
 
-export class FieldComponent extends React.Component<FieldComponentProps, {}> {
+export class FieldComponent extends React.PureComponent<
+  FieldComponentProps,
+  {}
+> {
   componentDidMount() {
     document.addEventListener("contextmenu", this.handleContextMenu);
   }
 
   componentWillUnmount() {
     document.removeEventListener("contextmenu", this.handleContextMenu);
-  }
-
-  shouldComponentUpdate(
-    nextProps: FieldComponentProps,
-    nextState: {}
-  ): boolean {
-    return this.props.field !== nextProps.field;
   }
 
   handleContextMenu = (e: MouseEvent) => {
