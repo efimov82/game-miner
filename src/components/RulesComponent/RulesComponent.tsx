@@ -4,7 +4,7 @@ export function RulesComponent() {
   return (
     <>
       <div className="row">
-        <div className="col-8">
+        <div className="col col-sm-8">
           <h1>Welcome to the Minesweeper game!</h1>
           <p>
             In Minesweeper mines are scattered throughout a board, which is

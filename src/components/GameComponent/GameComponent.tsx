@@ -262,7 +262,7 @@ class GameComponent extends React.Component<{}, GameState> {
     const popUp: ReactNode = this.getPopupContent();
 
     return (
-      <div className="container">
+      <>
         {popUp}
         <div className="row mt-2 mb-2">
           <StatsComponent
@@ -285,7 +285,7 @@ class GameComponent extends React.Component<{}, GameState> {
             </button>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 }

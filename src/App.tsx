@@ -18,20 +18,24 @@ class App extends React.Component {
   public render() {
     return (
       <QueryClientProvider client={queryClient}>
-        <div className="row m-2">
-          <div className="col-1">
-            <MenuComponent />
+        <>
+          <div className="row m-2">
+            <div className="col">
+              <MenuComponent />
+            </div>
           </div>
-          <div className="col-11">
-            <Suspense fallback={<div>Loading...</div>}>
-              <Routes>
-                <Route path="/" element={<RulesComponent />} />
-                <Route path="game" element={<GameComponent />} />
-                <Route path="top" element={<TopComponent />} />
-              </Routes>
-            </Suspense>
+          <div className="row m-2">
+            <div className="col">
+              <Suspense fallback={<div>Loading...</div>}>
+                <Routes>
+                  <Route path="/" element={<RulesComponent />} />
+                  <Route path="game" element={<GameComponent />} />
+                  <Route path="top" element={<TopComponent />} />
+                </Routes>
+              </Suspense>
+            </div>
           </div>
-        </div>
+        </>
       </QueryClientProvider>
     );
   }
